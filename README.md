@@ -42,3 +42,4 @@ GUI 輸入框可接受：
 ## 開發紀錄
 
 詳細的開發過程與每次需求變更，記錄在 [`docs/prompt_log_2026-06-17.md`](docs/prompt_log_2026-06-17.md)。
+原始 prompt 紀錄見 [`docs/prompts_raw_2026-06-17.md`](docs/prompts_raw_2026-06-17.md)。
