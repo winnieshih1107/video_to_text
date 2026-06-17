@@ -16,6 +16,7 @@ import re
 import sys
 import tempfile
 import threading
+import time
 from collections import Counter
 
 if sys.platform == "win32":
@@ -415,6 +416,22 @@ def sanitize_filename(name: str) -> str:
     return re.sub(r'[\\/:*?"<>|]+', "_", name).strip()[:80]
 
 
+def write_text_with_retry(path: str, content: str, retries: int = 3, delay: float = 1.0):
+    """寫入檔案，失敗時重試幾次。Windows 上防毒軟體/雲端同步常常會在檔案剛建立時
+    短暫鎖定，造成偶發的 PermissionError，重試通常就能解決。"""
+    last_error = None
+    for attempt in range(retries):
+        try:
+            with open(path, "w", encoding="utf-8") as f:
+                f.write(content)
+            return
+        except PermissionError as e:
+            last_error = e
+            if attempt < retries - 1:
+                time.sleep(delay)
+    raise last_error
+
+
 def process_video(video_id: str, title: str, output_dir: str = ".", log=print,
                    control: "JobControl | None" = None) -> str:
     """抓字幕、整理重點、附上完整逐字稿，輸出 Markdown 筆記檔，回傳檔案路徑。
@@ -434,8 +451,7 @@ def process_video(video_id: str, title: str, output_dir: str = ".", log=print,
 
     filename = f"{sanitize_filename(title)}_筆記.md"
     output_path = os.path.join(output_dir, filename)
-    with open(output_path, "w", encoding="utf-8") as f:
-        f.write(markdown)
+    write_text_with_retry(output_path, markdown)
     return output_path
 
 
@@ -455,8 +471,7 @@ def process_external_url(url: str, output_dir: str = ".", model_size: str = "sma
     title_no_ext = re.sub(r"\.[A-Za-z0-9]{2,4}$", "", title)
     filename = f"{sanitize_filename(title_no_ext)}_筆記.md"
     output_path = os.path.join(output_dir, filename)
-    with open(output_path, "w", encoding="utf-8") as f:
-        f.write(markdown)
+    write_text_with_retry(output_path, markdown)
     return output_path
 
 
