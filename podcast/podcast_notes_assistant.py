@@ -9,6 +9,8 @@ Podcast 學習筆記助手
 - feedparser：解析 RSS feed，列出所有單集
 - faster-whisper：本機語音辨識（不需 API key）
 - jieba：中文斷詞，做詞頻統計與重點句評分
+
+pip install feedparser
 """
 
 import os
